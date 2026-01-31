@@ -1,0 +1,19 @@
+version: 0.1
+
+default:
+  global:
+    parameters:
+      region: "us-east-1" # CloudFront + ACMが利用できるリージョンがここだけ
+  build:
+    parameters:
+      cached: true
+      parallel: true
+  validate:
+    parameters:
+      lint: true
+  deploy:
+    parameters:
+      capabilities: "CAPABILITY_IAM"
+      confirm_changeset: false
+      resolve_s3: true
+      no_progressbar: true
