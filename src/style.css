@@ -78,7 +78,7 @@ body::before {
 
 .app-shell {
   min-height: 100vh;
-  padding: 32px 48px 48px;
+  padding: 32px 10vw 48px;
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -127,14 +127,16 @@ body::before {
 
 .app-main {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 420px);
-  gap: 32px;
+  grid-template-columns: minmax(0, 560px) minmax(280px, 420px);
+  gap: clamp(28px, 5vw, 44px);
   align-items: start;
+  justify-content: start;
 }
 
 .wheel-panel {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 .wheel-card {
@@ -246,7 +248,7 @@ body::before {
   gap: 20px;
   animation: floatUp 0.9s ease-out;
   width: min(420px, 100%);
-  justify-self: center;
+  justify-self: start;
 }
 
 .control-panel.is-collapsed > *:not(.panel-header) {
