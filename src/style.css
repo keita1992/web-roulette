@@ -379,6 +379,62 @@ body::before {
   justify-content: center;
 }
 
+.winner-history {
+  margin-top: 12px;
+  background: rgba(32, 29, 26, 0.04);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.winner-history-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.winner-history-header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.winner-count {
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: rgba(32, 29, 26, 0.08);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.winner-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  font-size: 0.95rem;
+}
+
+.winner-list li {
+  line-height: 1.4;
+}
+
+.winner-empty {
+  color: var(--muted);
+  list-style: none;
+  padding-left: 0;
+}
+
+.winner-history-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .ghost-button,
 .primary-button,
 .danger-button {

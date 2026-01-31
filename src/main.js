@@ -56,6 +56,16 @@ app.innerHTML = `
               <button class="ghost-button small" id="clearResultBtn" type="button">閉じる</button>
             </div>
           </div>
+          <div class="winner-history" id="winnerHistory">
+            <div class="winner-history-header">
+              <h3>当選者一覧</h3>
+              <span class="winner-count" id="winnerCount">0</span>
+            </div>
+            <ol class="winner-list" id="winnerList"></ol>
+            <div class="winner-history-actions">
+              <button class="ghost-button small" id="clearHistoryBtn" type="button">履歴をクリア</button>
+            </div>
+          </div>
         </div>
 
         <div class="editor" id="editor">
@@ -106,6 +116,10 @@ const elements = {
   resultPanel: document.querySelector('#resultPanel'),
   resultText: document.querySelector('#resultText'),
   clearResultBtn: document.querySelector('#clearResultBtn'),
+  winnerHistory: document.querySelector('#winnerHistory'),
+  winnerList: document.querySelector('#winnerList'),
+  winnerCount: document.querySelector('#winnerCount'),
+  clearHistoryBtn: document.querySelector('#clearHistoryBtn'),
   storageWarning: document.querySelector('#storageWarning'),
   controlPanel: document.querySelector('#controlPanel'),
   panelToggle: document.querySelector('#panelToggle'),
@@ -132,6 +146,7 @@ const state = {
   pendingExclusions: [],
   excludeWinners: true,
   lastWinner: null,
+  winners: [],
   spinning: false,
   showResult: false,
   showGuide: true,
@@ -175,6 +190,7 @@ function loadState() {
     if (Array.isArray(parsed.excluded)) state.excluded = parsed.excluded
     if (Array.isArray(parsed.pendingExclusions)) state.pendingExclusions = parsed.pendingExclusions
     if (typeof parsed.excludeWinners === 'boolean') state.excludeWinners = parsed.excludeWinners
+    if (Array.isArray(parsed.winners)) state.winners = parsed.winners
   } catch (error) {
     // Ignore broken storage
   }
@@ -187,6 +203,7 @@ function saveState() {
     excluded: state.excluded,
     pendingExclusions: state.pendingExclusions,
     excludeWinners: state.excludeWinners,
+    winners: state.winners,
   }
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
@@ -426,6 +443,24 @@ function updateResultPanel() {
   }
 }
 
+function updateWinnerHistory() {
+  elements.winnerCount.textContent = String(state.winners.length)
+  elements.winnerList.textContent = ''
+  if (!state.winners.length) {
+    const empty = document.createElement('li')
+    empty.className = 'winner-empty'
+    empty.textContent = 'まだありません'
+    elements.winnerList.appendChild(empty)
+    return
+  }
+  state.winners.forEach((winner) => {
+    const item = document.createElement('li')
+    const suffix = winner.endsWith('さん') ? '' : 'さん'
+    item.textContent = `${winner}${suffix}`
+    elements.winnerList.appendChild(item)
+  })
+}
+
 function updatePanelState() {
   elements.controlPanel.classList.toggle('is-collapsed', state.panelCollapsed)
 }
@@ -434,6 +469,7 @@ function updateUI() {
   updateCounts()
   updateErrors()
   updateResultPanel()
+  updateWinnerHistory()
   updatePanelState()
 
   elements.spinBtn.disabled = state.spinning
@@ -463,13 +499,16 @@ function handleReset() {
   if (state.spinning) return
   const ok = window.confirm('候補をリセットします。よろしいですか？')
   if (!ok) return
-  state.items = []
+  state.items = parseCandidates(elements.candidateInput.value)
   state.excluded = []
   state.pendingExclusions = []
   state.lastWinner = null
+  state.winners = []
   state.showResult = false
-  elements.candidateInput.value = ''
-  drawWheel([])
+  state.showGuide = true
+  state.rotation = 0
+  drawWheel(getAvailableItems(state.items, state.excluded))
+  setWheelRotation(state.rotation)
   saveState()
   updateUI()
 }
@@ -516,7 +555,7 @@ function handleSpin() {
   const desired = normalizeAngle(-centerAngle - offset)
   const delta = (desired - current + 360) % 360
   const spins = randomIntBetween(5, 12)
-  const duration = prefersReducedMotion ? 500 : randomBetween(3500, 6000)
+  const duration = prefersReducedMotion ? 500 : randomBetween(6000, 8000)
   const target = state.rotation + spins * 360 + delta
 
   state.spinning = true
@@ -541,8 +580,9 @@ function handleSpin() {
       if (state.excludeWinners) {
         state.pendingExclusions.push(winner)
         state.pendingExclusions = reconcileExcluded(state.items, state.pendingExclusions)
-        saveState()
       }
+      state.winners.push(winner)
+      saveState()
       showResult()
     }
   }
@@ -639,6 +679,12 @@ elements.excludeToggle.addEventListener('change', () => {
 
 elements.clearResultBtn.addEventListener('click', () => {
   state.showResult = false
+  updateUI()
+})
+
+elements.clearHistoryBtn.addEventListener('click', () => {
+  state.winners = []
+  saveState()
   updateUI()
 })
 
